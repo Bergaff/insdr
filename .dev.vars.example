@@ -1,0 +1,26 @@
+# Локальная разработка: cp .dev.vars.example .dev.vars и заполнить.
+# worker в dev-режиме читает этот файл (wrangler dev).
+
+# Токен аккаунта Instagram (Business/Creator) с правами
+# instagram_business_basic + instagram_business_manage_messages.
+# Если оставить пустым — worker работает в dry-run режиме:
+# не зовёт Meta API, а логирует входящие/исходящие DM в консоль.
+IG_ACCESS_TOKEN=
+
+# App Secret приложения Meta (нужен для проверки X-Hub-Signature-256 вебхуков).
+# В demo-режиме можно оставить test-secret.
+IG_APP_SECRET=test-secret
+
+# Строка для hub.verify_token при настройке вебхука в Meta App Dashboard.
+WH_VERIFY_TOKEN=test-token
+
+# Публичный URL этого worker (в проде: https://insdr-bot.<subdomain>.workers.dev).
+# Instagram качает готовый mp4 по ссылке <PUBLIC_BASE_URL>/m/<key>.
+PUBLIC_BASE_URL=http://127.0.0.1:8787
+
+# Процессор: echo | http
+PROCESSOR=echo
+
+# Для PROCESSOR=http:
+#PROCESSOR_URL=https://your-video-api.example.com/process
+#PROCESSOR_API_KEY=
