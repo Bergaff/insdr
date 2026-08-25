@@ -190,10 +190,31 @@ wrangler secret put PROCESSOR_API_KEY  # опционально, уйдёт в A
 wrangler config --set vars.PROCESSOR=http   # или поправь wrangler.jsonc
 ```
 
+Контракт с твоим API:
+
+- **Запрос** — `POST PROCESSOR_URL`, `multipart/form-data`, файл в поле `video`
+  (имя `video.mp4`); если задан `PROCESSOR_API_KEY` — заголовок
+  `Authorization: Bearer <ключ>`.
+- **Ответ** — либо тело готового mp4 (`Content-Type: video/mp4`),
+  либо JSON `{ "video_url": "https://..." }` (скачаем по ссылке).
+- **Лимит времени** — 14 минут (wall-clock queue consumer — 15). Если генерация
+  дольше — делай submit/poll: отдельная короткая задача в очереди опрашивает
+  сервис (интерфейс `VideoProcessor` легко расширить, см. `src/processor.ts`).
+
+Проверить локально без своего API:
+
+```bash
+node scripts/mock-processor.mjs        # мок-API на :8898 (POST /process, /process-json)
+# в .dev.vars:
+#   PROCESSOR=http
+#   PROCESSOR_URL=http://127.0.0.1:8898/process      (или /process-json)
+#   PROCESSOR_API_KEY=test-key
+npm run dev
+npm run demo
+```
+
 Свой процессор: экспорт класса, реализующего `VideoProcessor`, и его выбор в
-`createProcessor()`. Если задача долгая (>10–15 минут) — вынеси за queue:
-processor кладёт job в свой сервис, а queue consumer опрашивает его статус
-(схема «submit + poll»); интерфейс легко расширить.
+`createProcessor()`.
 
 ## Файлы
 
@@ -207,6 +228,7 @@ src/ig.ts         клиент graph.instagram.com (sendText/sendVideo/resolveMe
 src/media.ts      отдача mp4 из R2 (/m/...), Range-запросы
 scripts/token.mjs login / exchange / refresh / me / subscribe
 scripts/mock-webhook.mjs  локальный e2e (npm run demo)
+scripts/mock-processor.mjs  мок внешнего API для PROCESSOR=http
 ```
 
 ## Операции
