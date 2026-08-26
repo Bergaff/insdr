@@ -14,7 +14,7 @@ IG_APP_SECRET=test-secret
 # Строка для hub.verify_token при настройке вебхука в Meta App Dashboard.
 WH_VERIFY_TOKEN=test-token
 
-# Публичный URL этого worker (в проде: https://insdr-bot.<subdomain>.workers.dev).
+# Публичный URL этого worker (в проде: https://insdr.<subdomain>.workers.dev).
 # Instagram качает готовый mp4 по ссылке <PUBLIC_BASE_URL>/m/<key>.
 PUBLIC_BASE_URL=http://127.0.0.1:8787
 

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "insdr-bot",
+  "name": "insdr",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-01",
 
@@ -53,6 +53,6 @@
   //   wrangler secret put IG_ACCESS_TOKEN
   //   wrangler secret put IG_APP_SECRET
   //   wrangler secret put WH_VERIFY_TOKEN
-  //   wrangler secret put PUBLIC_BASE_URL   (https://insdr-bot.<subdomain>.workers.dev)
+  //   wrangler secret put PUBLIC_BASE_URL   (https://insdr.<subdomain>.workers.dev)
   //   wrangler secret put PROCESSOR_URL     (только для PROCESSOR=http)
 }

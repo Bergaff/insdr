@@ -127,7 +127,7 @@ wrangler kv namespace create SEEN
 wrangler secret put IG_ACCESS_TOKEN     # токен из шага 3
 wrangler secret put IG_APP_SECRET       # App Secret (проверка подписи вебхука)
 wrangler secret put WH_VERIFY_TOKEN     # любая длинная строка (hub.verify_token)
-wrangler secret put PUBLIC_BASE_URL     # https://insdr-bot.<subdomain>.workers.dev
+wrangler secret put PUBLIC_BASE_URL     # https://insdr.<subdomain>.workers.dev
 
 # 3) deploy (создаст worker, R2-бакет и очередь):
 npm run deploy
@@ -139,7 +139,7 @@ npm run deploy
 ### Шаг 5. Webhook в Meta App Dashboard
 
 1. App Dashboard → **Webhooks → Instagram**.
-2. **Callback URL**: `https://insdr-bot.<subdomain>.workers.dev/webhook`
+2. **Callback URL**: `https://insdr.<subdomain>.workers.dev/webhook`
 3. **Verify Token**: та же строка, что в `WH_VERIFY_TOKEN`.
    Meta отправит GET-запрос — worker ответит challenge (это проверка).
 4. Подпишись на поле **`messages`** (Subscribe). Дополнительно можно:
