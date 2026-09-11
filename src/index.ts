@@ -36,6 +36,14 @@ export default {
       return new Response(PRIVACY_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     }
 
+    if (url.pathname === '/terms') {
+      return new Response(TERMS_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
+    if (url.pathname === '/data-deletion') {
+      return new Response(DATA_DELETION_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
     if (url.pathname === '/webhook') {
       // 1) Верификация: GET ?hub.mode=subscribe&hub.challenge=...&hub.verify_token=...
       if (request.method === 'GET') {
@@ -141,4 +149,56 @@ the processed video to the same chat. We store messages you send only to process
 inbound files are auto-deleted within 24 hours, outbound files within 7 days. We do not sell or
 share your data except with our hosting provider (Cloudflare) and Meta/Instagram APIs used for
 message delivery.</p>
+</body></html>`;
+
+/** Короткое пользовательское соглашение (нужно Meta для Live-режима). */
+const TERMS_HTML = `<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>insdr — Пользовательское соглашение / Terms of Service</title></head>
+<body style="font-family:sans-serif;max-width:720px;margin:2em auto;padding:0 1em;line-height:1.6">
+<h1>Пользовательское соглашение insdr</h1>
+<p><b>insdr</b> — бот для обработки видео в личных сообщениях Instagram.</p>
+<ol>
+<li><b>Сервис.</b> Вы отправляете видео в личные сообщения аккаунта бота, бот возвращает
+обработанный видеофайл в тот же чат. Ответ приходит, как правило, в течение нескольких минут.</li>
+<li><b>Правила использования.</b> Запрещено отправлять контент, нарушающий закон или права третьих лиц,
+а также спам. Мы вправе не обрабатывать такие сообщения.</li>
+<li><b>Ограничения.</b> Принимаются видеофайлы разумного размера (до 64 МБ), результат — до 25 МБ
+(техническое ограничение Instagram). Бот отвечает только на сообщения пользователей, первым не пишет.</li>
+<li><b>Гарантии.</b> Сервис предоставляется «как есть», без гарантий бесперебойной работы.</li>
+<li><b>Конфиденциальность.</b> Обработка данных описана в
+<a href="/privacy">Политике конфиденциальности</a>.</li>
+</ol>
+<p><i>Дата вступления: 11 сентября 2026 г.</i></p>
+<hr>
+<h1>Terms of Service (short version)</h1>
+<p><b>insdr</b> is an Instagram Direct video-processing bot: you send a video, the bot returns
+the processed file to the same chat. Do not send unlawful, infringing or spam content.
+Inbound files up to 64 MB, results up to 25 MB (Instagram platform limit). The service is
+provided "as is", without warranties. Data handling is described in our
+<a href="/privacy">Privacy Policy</a>.</p>
+</body></html>`;
+
+/** Инструкции по удалению данных (нужно Meta для Live-режима). */
+const DATA_DELETION_HTML = `<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>insdr — Удаление данных / Data Deletion</title></head>
+<body style="font-family:sans-serif;max-width:720px;margin:2em auto;padding:0 1em;line-height:1.6">
+<h1>Удаление ваших данных</h1>
+<ol>
+<li><b>Переписка.</b> Удалите чат с ботом в Instagram — сообщения удалятся у вас.
+Обратите внимание: удаление чата у вас не всегда удаляет его у собеседника — это ограничение Instagram.</li>
+<li><b>Файлы на нашей стороне.</b> Входящие видео удаляются автоматически в течение 24 часов,
+исходящие — в течение 7 дней. Отдельного запроса не требуется.</li>
+<li><b>Досрочное удаление.</b> Напишите владельцу приложения через страницу приложения в Meta
+с пометкой «Data deletion» и вашим username в Instagram — файлы, связанные с вашим чатом,
+будут удалены вручную в течение 7 дней, о чём мы ответим тем же каналом.</li>
+</ol>
+<p>Подробнее — в <a href="/privacy">Политике конфиденциальности</a>.</p>
+<hr>
+<h1>Data Deletion (short version)</h1>
+<p>Delete the chat with the bot in Instagram to remove messages on your side. Files on our side
+auto-delete (inbound within 24 hours, outbound within 7 days). For earlier manual deletion,
+contact the app owner via the Meta app page with subject "Data deletion" and your Instagram
+username — we will delete your files within 7 days.</p>
 </body></html>`;
