@@ -45,6 +45,16 @@
     "OUTBOUND_MAX_MB": "25",
     "QUEUE_MAX_ATTEMPTS": "4",
     "ACK_TEXT": "Получил видео, обрабатываю 🎬"
+  },
+
+  // Наблюдаемость: включает вкладку Logs в дашборде (иначе панель просит это добавить).
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    }
   }
 
   // Секреты ставятся командой, например:
