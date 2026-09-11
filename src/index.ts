@@ -32,6 +32,10 @@ export default {
       });
     }
 
+    if (url.pathname === '/privacy') {
+      return new Response(PRIVACY_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    }
+
     if (url.pathname === '/webhook') {
       // 1) Верификация: GET ?hub.mode=subscribe&hub.challenge=...&hub.verify_token=...
       if (request.method === 'GET') {
@@ -105,3 +109,36 @@ export default {
     return handleJobs(env, batch);
   },
 };
+
+/** Короткая политика конфиденциальности (нужна Meta для Live-режима). */
+const PRIVACY_HTML = `<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>insdr — Политика конфиденциальности / Privacy Policy</title></head>
+<body style="font-family:sans-serif;max-width:720px;margin:2em auto;padding:0 1em;line-height:1.6">
+<h1>Политика конфиденциальности insdr</h1>
+<p><b>insdr</b> — бот для обработки видео в личных сообщениях Instagram: пользователь отправляет видео,
+бот возвращает обработанный видеофайл в тот же чат.</p>
+<h2>Какие данные мы получаем</h2>
+<ul>
+<li>Сообщения, которые вы сами отправляете боту (текст, видео, изображения).</li>
+<li>Технические идентификаторы чата, необходимые для ответа (ID отправителя, ID сообщения).</li>
+</ul>
+<h2>Как используем</h2>
+<ul>
+<li>Исключительно для обработки вашего видео и отправки результата обратно в чат.</li>
+<li>Входящие файлы хранятся временно и удаляются автоматически (до 24 часов), исходящие — до 7 дней.</li>
+<li>Мы не продаём и не передаём ваши данные третьим лицам, кроме хостинг-провайдера
+(Cloudflare) и API Meta/Instagram, через которые работает доставка сообщений.</li>
+</ul>
+<h2>Удаление данных</h2>
+<p>Удалите переписку с ботом — это удалит сообщения у вас. Чтобы запросить удаление файлов
+на нашей стороне, напишите владельцу приложения через страницу приложения в Meta.</p>
+<p><i>Дата вступления: 11 сентября 2026 г.</i></p>
+<hr>
+<h1>Privacy Policy (short version)</h1>
+<p><b>insdr</b> is a bot that processes videos sent to it via Instagram Direct and returns
+the processed video to the same chat. We store messages you send only to process them and reply:
+inbound files are auto-deleted within 24 hours, outbound files within 7 days. We do not sell or
+share your data except with our hosting provider (Cloudflare) and Meta/Instagram APIs used for
+message delivery.</p>
+</body></html>`;
