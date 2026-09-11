@@ -1,0 +1,23 @@
+{
+  "name": "insdr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Instagram DM video bot: user sends a reel in DM, bot replies with an mp4. Runs on Cloudflare Workers.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "selftest": "esbuild src/selftest.ts --bundle --platform=node --format=esm --target=node18 --outfile=.build/selftest.mjs && node .build/selftest.mjs",
+    "demo": "node scripts/mock-webhook.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260820.1",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.0",
+    "wrangler": "^4.14.0"
+  }
+}

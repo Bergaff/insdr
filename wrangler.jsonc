@@ -1,0 +1,58 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "insdr",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "insdr-media"
+      // bucket создастся автоматически при `wrangler deploy`
+    }
+  ],
+
+  "queues": {
+    "producers": [
+      {
+        "binding": "JOBS",
+        "queue": "insdr-video-jobs"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "insdr-video-jobs",
+        "max_batch_size": 1,
+        "max_batch_timeout": 5,
+        // попыток на задачу: 1 + 3 ретрая = 4 (соответствует QUEUE_MAX_ATTEMPTS)
+        "max_retries": 3
+      }
+    ]
+  },
+
+  // Дедупликация вебхуков (Meta ретраит события до 36 часов).
+  // 1) wrangler kv namespace create SEEN
+  // 2) вписать выданный id в поле "id" ниже и раскомментировать:
+  // "kv_namespaces": [
+  //   { "binding": "SEEN", "id": "PASTE_KV_NAMESPACE_ID" }
+  // ],
+
+  "vars": {
+    "GRAPH_API_VERSION": "v25.0",
+    // Как обрабатывать видео: "echo" (отдать то же самое — для теста пайплайна)
+    // или "http" (послать на внешний API, см. PROCESSOR_URL / README).
+    "PROCESSOR": "echo",
+    "INBOUND_MAX_MB": "64",
+    // Лимит Meta на исходящее видео в DM
+    "OUTBOUND_MAX_MB": "25",
+    "QUEUE_MAX_ATTEMPTS": "4",
+    "ACK_TEXT": "Получил видео, обрабатываю 🎬"
+  }
+
+  // Секреты ставятся командой, например:
+  //   wrangler secret put IG_ACCESS_TOKEN
+  //   wrangler secret put IG_APP_SECRET
+  //   wrangler secret put WH_VERIFY_TOKEN
+  //   wrangler secret put PUBLIC_BASE_URL   (https://insdr.<subdomain>.workers.dev)
+  //   wrangler secret put PROCESSOR_URL     (только для PROCESSOR=http)
+}
