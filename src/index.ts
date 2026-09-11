@@ -55,9 +55,12 @@ export default {
         const raw = await request.arrayBuffer();
 
         if (env.IG_APP_SECRET) {
-          const ok = await verifyWebhookSignature(raw, request.headers.get('X-Hub-Signature-256'), env.IG_APP_SECRET);
+          const sigHeader = request.headers.get('X-Hub-Signature-256');
+          const ok = await verifyWebhookSignature(raw, sigHeader, env.IG_APP_SECRET);
           if (!ok) {
-            console.warn('[webhook] подпись X-Hub-Signature-256 не совпала');
+            console.warn(
+              `[webhook] подпись X-Hub-Signature-256 не совпала (header: ${sigHeader ? 'есть' : 'нет'}, body: ${raw.byteLength} B)`
+            );
             return new Response('bad signature', { status: 401 });
           }
         }
