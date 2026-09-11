@@ -31,11 +31,9 @@
   },
 
   // Дедупликация вебхуков (Meta ретраит события до 36 часов).
-  // 1) wrangler kv namespace create SEEN
-  // 2) вписать выданный id в поле "id" ниже и раскомментировать:
-  // "kv_namespaces": [
-  //   { "binding": "SEEN", "id": "PASTE_KV_NAMESPACE_ID" }
-  // ],
+  "kv_namespaces": [
+    { "binding": "SEEN", "id": "eda87e01e8804597a01135b2e6a30a5a" }
+  ],
 
   "vars": {
     "GRAPH_API_VERSION": "v25.0",
