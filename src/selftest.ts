@@ -5,6 +5,7 @@
 import { parseWebhookPayload, verifyWebhookSignature } from './webhook';
 import { extractAssetId, extractShortcode } from './pipeline';
 import { safeMediaKey } from './media';
+import { parseAd } from './ads';
 
 let failed = 0;
 function check(name: string, cond: boolean, extra?: unknown): void {
@@ -191,6 +192,114 @@ check('outbound ok', safeMediaKey('outbound/abc.1735100000000.mp4') === 'outboun
 check('path traversal', safeMediaKey('../etc/passwd') === null);
 check('чужой префикс', safeMediaKey('private/x.mp4') === null);
 check('слэш', safeMediaKey('a/b/c.mp4') === null);
+
+// ---------- парсер объявлений (попутки/посылки) ----------
+console.log('\nads parsing:');
+
+// 1) Структурированная посылка — одно плечо строго по полям.
+const parcel = parseAd(
+  'ПОСЫЛКА\n#посылка\nОткуда: Минск\nКуда: Стамбул\nКогда: до 22.09.2026\nЦена: 15-20$\nКомментарий: маленький конвертик с кусочком ткани'
+);
+check('parcel kind', parcel.kind === 'parcel');
+check('parcel одно плечо', parcel.legs.length === 1);
+check(
+  'parcel from/to',
+  parcel.legs[0]?.from === 'Минск' && parcel.legs[0]?.to === 'Стамбул'
+);
+check('parcel date', parcel.legs[0]?.dateRaw?.includes('22.09.2026') === true);
+check('parcel price', parcel.price === '15-20$');
+check('parcel comment', parcel.comment?.includes('конвертик') === true);
+
+// 2) Водитель, два направления в одном сообщении — два плеча по датам.
+const driver2 = parseAd(
+  '🚗#водитель подстроюсь\nпередачи попутчики посылки\n18-19.9 Белосток Гр Минск\n20-21.9 Мог Минск Белосток\nVb+375256663703\nTG+48459568684:KgRBPL'
+);
+check('driver kind', driver2.kind === 'driver');
+check('driver два плеча', driver2.legs.length === 2);
+check(
+  'плечо 1 Белосток→Минск через Гродно',
+  driver2.legs[0]?.from === 'Белосток' &&
+    driver2.legs[0]?.to === 'Минск' &&
+    driver2.legs[0]?.via.join(',') === 'Гродно' &&
+    driver2.legs[0]?.dateRaw === '18-19.9'
+);
+check(
+  'плечо 2 Могилёв→Белосток через Минск',
+  driver2.legs[1]?.from === 'Могилёв' &&
+    driver2.legs[1]?.to === 'Белосток' &&
+    driver2.legs[1]?.via.join(',') === 'Минск' &&
+    driver2.legs[1]?.dateRaw === '20-21.9'
+);
+check(
+  'контакты',
+  driver2.contacts.some((c) => c.includes('375256663703')) &&
+    driver2.contacts.some((c) => c.includes('48459568684'))
+);
+
+// 3) Погранпункт пропускается + «обратно» разворачивает плечо; время не путается с датами.
+const driver3 = parseAd(
+  '18.09, пятница, в 15.00-16.00 еду Белосток Кузница Гродно.\nЕсть места, посылки пачкоматы\n20.09, воскресенье, в 11.00-12.00 обратно.\n\nВайбер +375297872212.'
+);
+check('driver3 kind', driver3.kind === 'driver');
+check('driver3 два плеча', driver3.legs.length === 2);
+check(
+  'Кузница пропущена для заявки',
+  driver3.legs[0]?.from === 'Белосток' &&
+    driver3.legs[0]?.to === 'Гродно' &&
+    driver3.legs[0]?.via.length === 0 &&
+    driver3.legs[0]?.borderPoints.join(',') === 'Кузница' &&
+    driver3.legs[0]?.dateRaw === '18.09'
+);
+check(
+  'обратно развёрнуто',
+  driver3.legs[1]?.reversed === true &&
+    driver3.legs[1]?.from === 'Гродно' &&
+    driver3.legs[1]?.to === 'Белосток' &&
+    driver3.legs[1]?.dateRaw === '20.09'
+);
+check(
+  'контакт вайбер',
+  driver3.contacts.some((c) => c.includes('375297872212'))
+);
+
+// 4) Маршрут уровня страны + «обратно» с явным маршрутом и датой в конце.
+const driver4 = parseAd(
+  '28 сентября еду из РБ в Киев. Возьму попутчиков, посылки, передачи\nОбратно из Киева в Рб в период с 29.09-1.10'
+);
+check('driver4 два плеча', driver4.legs.length === 2);
+check(
+  'туда Беларусь→Киев',
+  driver4.legs[0]?.from === 'Беларусь' &&
+    driver4.legs[0]?.to === 'Киев' &&
+    driver4.legs[0]?.dateRaw === '28 сентября'
+);
+check(
+  'обратно Киев→Беларусь со своей датой',
+  driver4.legs[1]?.from === 'Киев' &&
+    driver4.legs[1]?.to === 'Беларусь' &&
+    driver4.legs[1]?.dateRaw === '29.09-1.10'
+);
+
+// 5) Ложные срабатывания: глагол «мог» — не Могилёв, время — не дата.
+const tricky = parseAd('28 сентября еду Минск Киев, мог бы взять посылки, выезд в 15.00');
+check(
+  'глагол «мог» не город',
+  tricky.legs.length === 1 &&
+    tricky.legs[0]?.from === 'Минск' &&
+    tricky.legs[0]?.to === 'Киев' &&
+    tricky.legs[0]?.dateRaw === '28 сентября'
+);
+
+// 6) Склонения: «из Варшавы через Кузницу в Гродно».
+const decl = parseAd('18.09 еду из Варшавы через Кузницу в Гродно, есть места');
+check(
+  'склонения городов и погранпункта',
+  decl.legs.length === 1 &&
+    decl.legs[0]?.from === 'Варшава' &&
+    decl.legs[0]?.to === 'Гродно' &&
+    decl.legs[0]?.via.length === 0 &&
+    decl.legs[0]?.borderPoints.join(',') === 'Кузница'
+);
 
 console.log(failed === 0 ? '\nВсе тесты пройдены ✅' : `\nПРОВАЛЕНО ТЕСТОВ: ${failed} ❌`);
 process.exit(failed === 0 ? 0 : 1);
